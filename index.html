@@ -2,32 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Muri i Kujtimeve</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Memory Wall</title>
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #f5f5f5;
     }
     h1 {
-      margin: 20px;
-      color: #333;
+      margin: 20px 0;
     }
     #wall {
       display: grid;
       grid-template-columns: repeat(100, 6px);
       grid-template-rows: repeat(100, 6px);
       gap: 1px;
-      background-color: #ccc;
+      background: #ccc;
     }
     .brick {
       width: 6px;
       height: 6px;
-      background-color: #ffffff;
+      background-color: #fff;
       cursor: pointer;
     }
     .brick.taken {
@@ -40,21 +40,34 @@
       border: 1px solid #ccc;
       display: none;
     }
+    #buyForm {
+      display: none;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>Muri i Kujtimeve – 1 Tullë = 5€</h1>
+  <h1>Memory Wall – Buy a Brick for 5€</h1>
   <div id="wall"></div>
   <div id="infoBox"></div>
+  <div id="buyForm">
+    <p>To buy this brick, fill your message and click Send:</p>
+    <form action="mailto:your@email.com" method="POST" enctype="text/plain">
+      <input type="text" name="Brick Message" placeholder="Your message..." required />
+      <input type="hidden" name="Brick Number" id="brickId" />
+      <button type="submit">Send Request</button>
+    </form>
+  </div>
 
   <script>
     const wall = document.getElementById('wall');
     const infoBox = document.getElementById('infoBox');
+    const buyForm = document.getElementById('buyForm');
+    const brickIdInput = document.getElementById('brickId');
 
     const takenBricks = {
-      1234: { message: 'Për nënën time 💖' },
-      5678: { message: '2024 - Një fillim i ri' },
-      8901: { message: 'Gjurmë në përjetësi 🌍' }
+      1234: { message: "Për nënën time 💖" },
+      5678: { message: "Gjurmë në përjetësi 🌍" },
     };
 
     for (let i = 0; i < 10000; i++) {
@@ -63,12 +76,14 @@
       if (takenBricks[i]) brick.classList.add('taken');
 
       brick.addEventListener('click', () => {
+        infoBox.style.display = 'block';
         if (takenBricks[i]) {
-          infoBox.style.display = 'block';
-          infoBox.textContent = `Tullë #${i} – ${takenBricks[i].message}`;
+          infoBox.textContent = `Brick #${i}: ${takenBricks[i].message}`;
+          buyForm.style.display = 'none';
         } else {
-          infoBox.style.display = 'block';
-          infoBox.textContent = `Tullë #${i} është e lirë. Mund ta blesh për 5€.`;
+          infoBox.textContent = `Brick #${i} is available.`;
+          buyForm.style.display = 'block';
+          brickIdInput.value = i;
         }
       });
 
