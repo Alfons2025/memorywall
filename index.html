@@ -1,94 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Memory Wall</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Globe</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      background: #f4f4f4;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 {
-      margin: 20px 0;
-    }
-    #wall {
-      display: grid;
-      grid-template-columns: repeat(100, 6px);
-      grid-template-rows: repeat(100, 6px);
-      gap: 1px;
-      background: #ccc;
-    }
-    .brick {
-      width: 6px;
-      height: 6px;
-      background-color: #fff;
-      cursor: pointer;
-    }
-    .brick.taken {
-      background-color: #ff6666;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
     }
     #infoBox {
-      margin-top: 20px;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255,255,255,0.9);
       padding: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
-      display: none;
-    }
-    #buyForm {
-      display: none;
-      margin-top: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      max-width: 300px;
     }
   </style>
 </head>
 <body>
-  <h1>Memory Wall – Buy a Brick for 5€</h1>
-  <div id="wall"></div>
-  <div id="infoBox"></div>
-  <div id="buyForm">
-    <p>To buy this brick, fill your message and click Send:</p>
-    <form action="mailto:your@email.com" method="POST" enctype="text/plain">
-      <input type="text" name="Brick Message" placeholder="Your message..." required />
-      <input type="hidden" name="Brick Number" id="brickId" />
-      <button type="submit">Send Request</button>
-    </form>
+  <div id="infoBox">
+    <strong>Click on a marker</strong><br>
+    Each one represents a place someone can reserve for a memory 🌍
   </div>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three-globe@2.26.3/dist/three-globe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.min.js"></script>
   <script>
-    const wall = document.getElementById('wall');
-    const infoBox = document.getElementById('infoBox');
-    const buyForm = document.getElementById('buyForm');
-    const brickIdInput = document.getElementById('brickId');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-    const takenBricks = {
-      1234: { message: "Për nënën time 💖" },
-      5678: { message: "Gjurmë në përjetësi 🌍" },
-    };
-
-    for (let i = 0; i < 10000; i++) {
-      const brick = document.createElement('div');
-      brick.classList.add('brick');
-      if (takenBricks[i]) brick.classList.add('taken');
-
-      brick.addEventListener('click', () => {
-        infoBox.style.display = 'block';
-        if (takenBricks[i]) {
-          infoBox.textContent = `Brick #${i}: ${takenBricks[i].message}`;
-          buyForm.style.display = 'none';
-        } else {
-          infoBox.textContent = `Brick #${i} is available.`;
-          buyForm.style.display = 'block';
-          brickIdInput.value = i;
-        }
+    const globe = new ThreeGlobe()
+      .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+      .pointsData([
+        { lat: 41.3275, lng: 19.8189, size: 0.2, color: 'red', name: "Tirana" },
+        { lat: 40.6401, lng: 19.9406, size: 0.2, color: 'blue', name: "Vlora" },
+        { lat: 51.5074, lng: -0.1278, size: 0.2, color: 'green', name: "London" }
+      ])
+      .pointAltitude('size')
+      .pointColor('color')
+      .onPointClick(point => {
+        alert(`This point is: ${point.name}\nWant to leave a memory here? 🌟`);
       });
 
-      wall.appendChild(brick);
+    scene.add(globe);
+    const ambientLight = new THREE.AmbientLight(0xbbbbbb);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    directionalLight.position.set(0, 1, 1);
+    scene.add(directionalLight);
+
+    camera.position.z = 250;
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableZoom = true;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      globe.rotation.y += 0.001;
+      controls.update();
+      renderer.render(scene, camera);
     }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>
